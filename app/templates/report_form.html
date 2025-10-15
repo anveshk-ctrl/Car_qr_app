@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report Car Issue</title>
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 20px; }
+        .container { max-width: 560px; margin: 0 auto; }
+        label { display:block; margin-top: 12px; font-weight: 600; }
+        select, textarea, input { width: 100%; padding: 10px; font-size: 16px; }
+        button { margin-top: 16px; padding: 10px 14px; font-size: 16px; cursor: pointer; }
+        .card { padding: 16px; border: 1px solid #ddd; border-radius: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Report a problem for car <span id="qr">{{ car.qr_code }}</span></h2>
+    <div class="card">
+        <form id="reportForm">
+            <label for="issue_type">Issue</label>
+            <select id="issue_type" name="issue_type_code" required>
+                {% for it in issue_types %}
+                <option value="{{ it.code }}">{{ it.title }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="comment">Comment (optional)</label>
+            <textarea id="comment" name="comment" rows="3" placeholder="Add details if needed"></textarea>
+
+            <label for="phone">Your phone (optional)</label>
+            <input id="phone" name="reporter_phone" placeholder="e.g. +15551234567" />
+
+            <button type="submit">Send Report</button>
+        </form>
+
+        <p id="result" style="display:none"></p>
+    </div>
+</div>
+<script>
+const form = document.getElementById('reportForm');
+const result = document.getElementById('result');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(form).entries());
+  const resp = await fetch('', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  const json = await resp.json().catch(()=>({}));
+  if (resp.ok) {
+    result.style.display = 'block';
+    result.textContent = 'Thanks! The owner has been notified.';
+    form.reset();
+  } else {
+    result.style.display = 'block';
+    result.textContent = json.detail || 'Something went wrong.';
+  }
+});
+</script>
+</body>
+</html>
